@@ -9,3 +9,4 @@ httpx
 aiofiles
 loguru
 huggingface_hub
+sqlalchemy
