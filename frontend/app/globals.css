@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Violet dark design tokens ──────────────────────────────────── */
+:root {
+  /* Tailwind channel values (space-separated RGB, no "rgb()") */
+  --bg:     14 12 24;
+  --panel:  28 24 48;
+  --border: 40 36 64;
+  --accent: 140 80 255;
+  --text:   255 255 255;
+  --muted:  148 140 168;
+
+  /* Raw CSS vars for inline/direct use */
+  --iy-violet:  #8C50FF;
+  --iy-violet2: #B888FF;
+  --iy-vglow:   rgba(140,80,255,0.45);
+  --iy-vsoft:   rgba(184,136,255,0.15);
+  --iy-b1:      rgba(255,255,255,0.08);
+  --iy-b2:      rgba(255,255,255,0.15);
+  --iy-b3:      rgba(255,255,255,0.30);
+  --iy-green:   #50FF9C;
+  --iy-cyan:    #50C8FF;
+  --iy-red:     #FF6868;
+}
+
+/* ── Base ────────────────────────────────────────────────────────── */
+html, body {
+  background: rgb(14 12 24);
+  color: #fff;
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.005em;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Scrollbar ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 100px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.30); }
+
+/* ── Background layers ───────────────────────────────────────────── */
+.iy-grid {
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+.iy-haze { border-radius: 50%; pointer-events: none; filter: blur(100px); }
+.iy-haze-v  { background: radial-gradient(circle, rgba(140,80,255,0.45) 0%, transparent 70%); width: 700px; height: 700px; top: -200px; right: -150px; animation: iy-drift1 24s ease-in-out infinite; }
+.iy-haze-v2 { background: radial-gradient(circle, rgba(106,48,224,0.30) 0%, transparent 70%); width: 700px; height: 700px; bottom: -250px; left: -150px; animation: iy-drift2 30s ease-in-out infinite; }
+.iy-haze-b  { background: radial-gradient(circle, rgba(80,140,255,0.18) 0%, transparent 70%); width: 500px; height: 500px; top: 40%; right: 30%; animation: iy-drift3 36s ease-in-out infinite; }
+
+/* ── Keyframes ───────────────────────────────────────────────────── */
+@keyframes iy-drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,80px)} }
+@keyframes iy-drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-80px,-60px)} }
+@keyframes iy-drift3 { 0%,100%{transform:translate(0,0)} 33%{transform:translate(40px,-50px)} 66%{transform:translate(-50px,40px)} }
+@keyframes iy-pulse  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+@keyframes iy-dot    { 0%,80%,100%{opacity:0.25;transform:translateY(0)} 40%{opacity:1;transform:translateY(-4px)} }
+@keyframes iy-msgIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes iy-float  { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+/* ── Utility classes ─────────────────────────────────────────────── */
+.iy-msg { animation: iy-msgIn 400ms cubic-bezier(0.4,0,0.2,1) both; }
+
+.iy-composer:focus-within {
+  border-color: var(--iy-violet) !important;
+  background: rgba(140,80,255,0.04) !important;
+  box-shadow: 0 0 0 1px var(--iy-violet), 0 0 28px rgba(140,80,255,0.22) !important;
+}
+.iy-composer textarea::placeholder { color: rgba(255,255,255,0.30); font-style: italic; }
+.iy-composer input::placeholder    { color: rgba(255,255,255,0.30); font-style: italic; }
+
+/* Filter chip (models page) */
+.iy-chip {
+  display: inline-block;
+  padding: 6px 14px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.02);
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.70);
+  cursor: pointer;
+  transition: all 200ms ease;
+  white-space: nowrap;
+  text-transform: lowercase;
+  user-select: none;
+}
+.iy-chip:hover  { border-color: rgba(255,255,255,0.30); color: #fff; }
+.iy-chip.active { background: var(--iy-violet); border-color: var(--iy-violet); color: #fff; box-shadow: 0 0 14px var(--iy-vglow); }
+
+/* Tag pills */
+.iy-tag   { display:inline-block; padding:2px 8px; font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.1em; text-transform:uppercase; border-radius:100px; background:rgba(255,255,255,0.06); color:rgba(255,255,255,0.70); }
+.iy-tag-v { background: rgba(184,136,255,0.15); color: #B888FF; }
+.iy-tag-c { background: rgba(136,224,255,0.12); color: #88E0FF; }
+.iy-tag-g { background: rgba(80,255,156,0.12);  color: #50FF9C; }
+.iy-tag-r { background: rgba(255,104,104,0.12); color: #FF6868; }
+
+/* Range input (settings) */
+input[type="range"] { -webkit-appearance:none; appearance:none; width:100%; height:3px; background:rgba(255,255,255,0.08); border-radius:100px; cursor:pointer; outline:none; margin:0; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:#B888FF; border:2px solid #8C50FF; box-shadow:0 0 8px rgba(140,80,255,0.5); cursor:pointer; }
+
+/* Toggle pill (settings) */
+.iy-toggle { width:38px; height:22px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:100px; position:relative; cursor:pointer; transition:all 250ms ease; flex-shrink:0; }
+.iy-toggle>span { position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.55); transition:all 250ms cubic-bezier(0.4,0,0.2,1); display:block; }
+.iy-toggle.on { background:rgba(140,80,255,0.3); border-color:var(--iy-violet); }
+.iy-toggle.on>span { left:18px; background:#B888FF; box-shadow:0 0 10px rgba(140,80,255,0.5); }

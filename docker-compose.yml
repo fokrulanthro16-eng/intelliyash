@@ -1,0 +1,39 @@
+version: "3.9"
+
+# One-command startup: docker compose up --build
+# Prerequisites: Docker Desktop installed, backend/.env configured.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # Persist models, projects, and DB across container restarts.
+      - ./backend/data:/app/data
+      - ./backend/models_storage:/app/models_storage
+      - ./backend/generated_projects:/app/generated_projects
+    env_file:
+      - ./backend/.env.example   # rename to .env and fill in keys
+    environment:
+      INTELLIYASH_HOST: "0.0.0.0"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Browser calls backend via the *host* port 8000 (exposed above).
+        NEXT_PUBLIC_API_URL: "http://localhost:8000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy

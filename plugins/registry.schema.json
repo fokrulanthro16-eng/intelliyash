@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "IntelliYash Plugin Registry",
+  "type": "object",
+  "required": ["version", "plugins"],
+  "properties": {
+    "version": { "type": "string" },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "entry", "hooks"],
+        "properties": {
+          "id":          { "type": "string", "description": "Unique plugin identifier, e.g. 'my-org/my-plugin'" },
+          "name":        { "type": "string", "description": "Human-readable display name" },
+          "version":     { "type": "string", "description": "SemVer string" },
+          "description": { "type": "string" },
+          "author":      { "type": "string" },
+          "entry":       { "type": "string", "description": "Relative path to the plugin Python module" },
+          "enabled":     { "type": "boolean", "default": true },
+          "hooks": {
+            "type": "array",
+            "description": "Which lifecycle hooks this plugin subscribes to",
+            "items": {
+              "type": "string",
+              "enum": [
+                "on_chat_message",
+                "on_chat_response",
+                "on_project_generated",
+                "on_model_loaded",
+                "on_model_unloaded"
+              ]
+            }
+          },
+          "config": {
+            "type": "object",
+            "description": "Plugin-specific configuration key/value pairs",
+            "additionalProperties": true
+          }
+        }
+      }
+    }
+  }
+}

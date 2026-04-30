@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Todo App</title>
+  <style>
+    body { font-family: Arial; background: #f6f7fb; padding: 40px; }
+    .app { max-width: 640px; margin: auto; background: white; padding: 24px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+    input { padding: 12px; width: 70%; border: 1px solid #ddd; border-radius: 8px; }
+    button { padding: 12px 14px; border: none; border-radius: 8px; background: #4f46e5; color: white; cursor: pointer; margin-left: 8px; }
+    li { margin: 12px 0; padding: 12px; background: #f3f4f6; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .done { text-decoration: line-through; opacity: .6; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Todo App</h1>
+    <input id="todoInput" placeholder="Write a todo..." />
+    <button onclick="addTodo()">Add</button>
+    <ul id="todos"></ul>
+  </div>
+
+  <script>
+    const API = "http://127.0.0.1:9100";
+
+    async function loadTodos() {
+      const res = await fetch(API + "/todos");
+      const data = await res.json();
+      const list = document.getElementById("todos");
+      list.innerHTML = "";
+
+      data.todos.forEach(todo => {
+        const li = document.createElement("li");
+        const span = document.createElement("span");
+        span.textContent = todo.title;
+        if (todo.done) span.className = "done";
+
+        const actions = document.createElement("div");
+
+        const toggleBtn = document.createElement("button");
+        toggleBtn.textContent = "Toggle";
+        toggleBtn.onclick = async () => {
+          await fetch(API + "/todos/" + todo.id, { method: "PUT" });
+          loadTodos();
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.textContent = "Delete";
+        delBtn.onclick = async () => {
+          await fetch(API + "/todos/" + todo.id, { method: "DELETE" });
+          loadTodos();
+        };
+
+        actions.appendChild(toggleBtn);
+        actions.appendChild(delBtn);
+        li.appendChild(span);
+        li.appendChild(actions);
+        list.appendChild(li);
+      });
+    }
+
+    async function addTodo() {
+      const input = document.getElementById("todoInput");
+      const title = input.value.trim();
+      if (!title) return;
+
+      await fetch(API + "/todos?title=" + encodeURIComponent(title), { method: "POST" });
+      input.value = "";
+      loadTodos();
+    }
+
+    loadTodos();
+  </script>
+</body>
+</html>
