@@ -948,7 +948,7 @@ function ApiExamplesSection() {
     { id: "opencode" as const, label: "OpenCode" },
   ];
 
-  const base = "http://localhost:8000";
+  const base = process.env.NEXT_PUBLIC_API_URL || "https://intelliyash-backend.onrender.com";
 
   const examples: Record<typeof tab, string> = {
     curl: `curl ${base}/v1/chat/completions \\
