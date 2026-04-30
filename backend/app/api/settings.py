@@ -4,6 +4,7 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import APIRouter
+from loguru import logger
 from pydantic import BaseModel
 
 from app.config import settings as runtime_settings
@@ -25,22 +26,37 @@ class SettingsPayload(BaseModel):
     idle_unload_seconds: Optional[int] = None
 
 
+_SETTINGS_DEFAULTS = {
+    "enable_cloud_fallback": False,
+    "cloud_provider":        "",
+    "cloud_model":           "",
+    "has_cloud_api_key":     False,
+    "temperature":           0.7,
+    "max_tokens":            512,
+    "idle_unload_seconds":   300,
+}
+
+
 @router.get("")
 async def get_settings() -> dict:
-    return {
-        "enable_cloud_fallback": runtime_settings.enable_cloud_fallback,
-        "cloud_provider":        runtime_settings.cloud_provider,
-        "cloud_model":           runtime_settings.cloud_model,
-        "has_cloud_api_key":     bool(
-            runtime_settings.cloud_api_key
-            or runtime_settings.openai_api_key
-            or runtime_settings.gemini_api_key
-            or runtime_settings.hf_token
-        ),
-        "temperature":           runtime_settings.temperature,
-        "max_tokens":            runtime_settings.max_tokens,
-        "idle_unload_seconds":   runtime_settings.idle_unload_seconds,
-    }
+    try:
+        return {
+            "enable_cloud_fallback": runtime_settings.enable_cloud_fallback,
+            "cloud_provider":        runtime_settings.cloud_provider,
+            "cloud_model":           runtime_settings.cloud_model,
+            "has_cloud_api_key":     bool(
+                runtime_settings.cloud_api_key
+                or runtime_settings.openai_api_key
+                or runtime_settings.gemini_api_key
+                or runtime_settings.hf_token
+            ),
+            "temperature":           runtime_settings.temperature,
+            "max_tokens":            runtime_settings.max_tokens,
+            "idle_unload_seconds":   runtime_settings.idle_unload_seconds,
+        }
+    except Exception:
+        logger.exception("get_settings failed — returning defaults")
+        return _SETTINGS_DEFAULTS
 
 
 @router.post("")

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from typing import Optional
 
 from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
@@ -34,6 +35,12 @@ class Settings(BaseSettings):
     idle_unload_seconds: int = 300
 
     enable_cloud_fallback: bool = False
+    cloud_provider: str = ""
+    cloud_model: str = ""
+    cloud_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
+    hf_token: Optional[str] = None
 
 
 settings = Settings()
