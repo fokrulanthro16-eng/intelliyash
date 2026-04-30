@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from loguru import logger
 
 from app.api import chat, health, models, projects, settings, system, keys, logs
 from app.db.database import init_db
@@ -11,9 +12,18 @@ from app.api.settings import load_persisted
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    await init_db()
-    await service.boot()
-    await load_persisted()
+    try:
+        await init_db()
+    except Exception:
+        logger.exception("init_db failed — continuing without persistent DB")
+    try:
+        await service.boot()
+    except Exception:
+        logger.exception("service.boot failed — LLM unavailable")
+    try:
+        await load_persisted()
+    except Exception:
+        logger.exception("load_persisted failed — using default settings")
     yield
 
 

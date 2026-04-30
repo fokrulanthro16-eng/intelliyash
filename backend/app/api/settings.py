@@ -93,17 +93,20 @@ async def update_settings(payload: SettingsPayload) -> dict:
 
 async def load_persisted() -> None:
     """Called on startup to apply previously saved settings."""
-    for key, attr, cast in [
-        ("enable_cloud_fallback", "enable_cloud_fallback", lambda v: v == "1"),
-        ("cloud_provider", "cloud_provider", str),
-        ("cloud_model", "cloud_model", str),
-        ("temperature", "temperature", float),
-        ("max_tokens", "max_tokens", int),
-        ("idle_unload_seconds", "idle_unload_seconds", int),
-    ]:
-        val = await db.get_setting(key)
-        if val is not None:
-            try:
-                setattr(runtime_settings, attr, cast(val))
-            except Exception:
-                pass
+    try:
+        for key, attr, cast in [
+            ("enable_cloud_fallback", "enable_cloud_fallback", lambda v: v == "1"),
+            ("cloud_provider", "cloud_provider", str),
+            ("cloud_model", "cloud_model", str),
+            ("temperature", "temperature", float),
+            ("max_tokens", "max_tokens", int),
+            ("idle_unload_seconds", "idle_unload_seconds", int),
+        ]:
+            val = await db.get_setting(key)
+            if val is not None:
+                try:
+                    setattr(runtime_settings, attr, cast(val))
+                except Exception:
+                    pass
+    except Exception:
+        logger.exception("load_persisted failed — using default settings")
