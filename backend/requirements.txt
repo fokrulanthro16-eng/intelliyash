@@ -10,3 +10,4 @@ aiofiles
 loguru
 huggingface_hub
 sqlalchemy
+aiosqlite
