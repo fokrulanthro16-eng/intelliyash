@@ -155,3 +155,72 @@ export const api = {
   getLogs: (limit = 60) =>
     get<{ logs: string[] }>(`/api/logs?limit=${limit}`),
 };
+export async function streamChat(opts: {
+  messages: ChatMessage[];
+  onToken?: (text: string) => void;
+  onMeta?: (meta: Record<string, any>) => void;
+  onDone?: () => void;
+  onError?: (err: string) => void;
+  signal?: AbortSignal;
+}): Promise<void> {
+  const r = await fetch(`${BASE}/api/chat/stream`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages: opts.messages }),
+    signal: opts.signal,
+  });
+
+  if (!r.ok || !r.body) {
+    opts.onError?.(`stream failed: ${r.status}`);
+    return;
+  }
+
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder("utf-8");
+  let buffer = "";
+  let currentEvent = "message";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const raw of lines) {
+      const line = raw.trimEnd();
+
+      if (line === "") {
+        currentEvent = "message";
+        continue;
+      }
+
+      if (line.startsWith("event:")) {
+        currentEvent = line.slice(6).trim();
+        continue;
+      }
+
+      if (line.startsWith("data:")) {
+        const data = line.slice(5).trim();
+        if (!data) continue;
+
+        let parsed: any = data;
+        try {
+          parsed = JSON.parse(data);
+        } catch { }
+
+        if (currentEvent === "meta") opts.onMeta?.(parsed);
+        if (currentEvent === "token" && parsed?.content) opts.onToken?.(parsed.content);
+        if (currentEvent === "error") {
+          opts.onError?.(parsed?.error ?? "unknown error");
+          return;
+        }
+        if (currentEvent === "done") {
+          opts.onDone?.();
+          return;
+        }
+      }
+    }
+  }
+}
