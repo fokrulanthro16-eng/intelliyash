@@ -74,7 +74,7 @@ def _pick_tier(ram_available_mb: int, disk_free_gb: float) -> Tier:
         return "mini"        # ~1.5B Q4
     if ram_available_mb < 5500:
         return "medium"      # ~3B Q4
-    return "large"           # 7B+ Q4
+    return "tiny"            # default: keep resource usage minimal
 
 
 def _pick_threads(logical_cores: int) -> int:
