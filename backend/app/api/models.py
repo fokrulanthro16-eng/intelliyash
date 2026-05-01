@@ -2,14 +2,22 @@
 from __future__ import annotations
 
 import asyncio
+import importlib.util
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
+from loguru import logger
 
 from app.core import model_registry
 from app.core.model_manager import MemoryGuardError, manager
 from app.services.llm_service import service
 
 router = APIRouter(prefix="/api/models", tags=["models"])
+
+_LLAMA_AVAILABLE = importlib.util.find_spec("llama_cpp") is not None
+_NO_LOCAL_MSG = (
+    "Local model loading is unavailable on this deployment. "
+    "Use a cloud API key or low-memory mode instead."
+)
 
 
 def _spec_dict(spec) -> dict:
@@ -36,6 +44,11 @@ async def list_models() -> dict:
 
 @router.post("/{model_id}/download")
 async def download_model(model_id: str, background: BackgroundTasks) -> dict:
+    if not _LLAMA_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "not_available", "message": _NO_LOCAL_MSG},
+        )
     spec = model_registry.get_by_id(model_id)
     if spec is None:
         raise HTTPException(404, "unknown model")
@@ -44,7 +57,6 @@ async def download_model(model_id: str, background: BackgroundTasks) -> dict:
         try:
             manager.download(spec)
         except Exception as exc:
-            from loguru import logger
             logger.exception(f"download {model_id} failed: {exc}")
 
     background.add_task(_do)
@@ -53,6 +65,11 @@ async def download_model(model_id: str, background: BackgroundTasks) -> dict:
 
 @router.post("/{model_id}/load")
 async def load_model(model_id: str) -> dict:
+    if not _LLAMA_AVAILABLE:
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "not_available", "message": _NO_LOCAL_MSG},
+        )
     spec = model_registry.get_by_id(model_id)
     if spec is None:
         raise HTTPException(404, "unknown model")
@@ -66,6 +83,12 @@ async def load_model(model_id: str) -> dict:
         raise HTTPException(
             status_code=409,
             detail={"error": "memory_guard", "message": str(exc)},
+        )
+    except Exception as exc:
+        logger.exception(f"load_model {model_id} failed")
+        raise HTTPException(
+            status_code=503,
+            detail={"error": "load_failed", "message": str(exc)},
         )
     return {"status": "loaded", "model_id": model_id}
 

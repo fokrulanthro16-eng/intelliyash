@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     openai_api_key: Optional[str] = None
     gemini_api_key: Optional[str] = None
     hf_token: Optional[str] = None
+    ram_safety_margin_mb: int = 300
 
 
 settings = Settings()
